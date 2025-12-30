@@ -6,5 +6,7 @@ package com.delfin.SortingAlgorithms;
  * Date:
  */
 public interface VisualizableAlgorithm {
-    
+    void onCompare(int index1, int index2);
+    void onSwap(int index1, int index2);
+    void onSuccStep(int index1, int index2);
 }
