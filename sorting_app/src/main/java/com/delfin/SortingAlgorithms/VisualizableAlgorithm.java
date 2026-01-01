@@ -1,7 +1,7 @@
 package com.delfin.SortingAlgorithms;
 /**
  * Visualizable interface determines which classes can be displayed in the 
- * JavaFX application.
+ * JavaFX application and which operations they have to implement.
  * Author: Delfin Eryılmaz
  * Date:
  */
