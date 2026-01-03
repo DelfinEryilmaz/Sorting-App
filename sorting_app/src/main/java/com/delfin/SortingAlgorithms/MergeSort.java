@@ -19,7 +19,12 @@ public class MergeSort implements VisualizableAlgorithm{
                 sort2(0, arr.length - 1, arr, temp);
             }
         } else {
+            if (inPlace) {
 
+            } else {
+                int[] temp = new int[arr.length];
+                sort3(0, arr.length - 1, arr, temp);
+            }
         }
     }
 
@@ -66,25 +71,21 @@ public class MergeSort implements VisualizableAlgorithm{
         while (i <= mid && j <= finish) {
             if (arr[i] > arr[j]) {
                 temp[k] = arr[j];
-                k++;
-                j++;
+                k++; j++;
             } else {
                 temp[k] = arr[i];
-                k++;
-                i++;
+                k++; i++;
             }
         }
 
         while (i <= mid) {
             temp[k] = arr[i];
-            k++;
-            i++;
+            k++; i++;
         }
 
         while (j <= finish) {
             temp[k] = arr[j];
-            k++;
-            j++;
+            k++; j++;
         }
 
         // Copy the temp into original array
@@ -149,10 +150,121 @@ public class MergeSort implements VisualizableAlgorithm{
                 arr[index] = value;
 
                 // Updating all pointers
-                start++;
-                mid++;
-                start2++;
+                start++; mid++; start2++;
             }
+        }
+    }
+
+    /**
+     * Recursive merge sort method dividing array into 3 parts.
+     * @param start
+     * @param finish
+     * @param arr
+     * @param tempArr
+     */
+    private static void sort3(int start, int finish, int[] arr, int[] tempArr) {
+        if (start >= finish) return;
+
+        if (finish - start == 1) {
+            if (arr[start] > arr[finish]) {
+                int temp = arr[finish];
+                arr[finish] = arr[start];
+                arr[start] = temp;
+                return;
+            }
+                
+        } else if (finish != start) {
+            int length = finish - start + 1;
+            int mid1 = start + (length / 3);
+            int mid2 = start + 2 * (length / 3);
+
+            sort3(start, mid1 - 1, arr, tempArr);
+            sort3(mid1, mid2 - 1, arr, tempArr);
+            sort3(mid2, finish, arr, tempArr);
+
+            merge3(arr, tempArr, start, mid1, mid2, finish);
+        }
+    }
+
+    /**
+     * Private helper merge method for the 3 part-merge sort using a temp array.
+     * @param arr
+     * @param tempArr
+     * @param start
+     * @param mid1
+     * @param mid2
+     * @param finish
+     */
+    private static void merge3(int[] arr, int[] tempArr, int start, int mid1, int mid2, int finish) {
+        int i = start;
+        int j = mid1;
+        int k = mid2;
+        int l = start;
+
+        // Making comparisons for merging
+        while (i < mid1 && j < mid2 && k <= finish) {
+            if (arr[i] <= arr[j] && arr[i] <= arr[k]) {
+                tempArr[l] = arr[i];
+                l++; i++;
+
+            } else if (arr[j] <= arr[i] && arr[j] <= arr[k]) {
+                tempArr[l] = arr[j];
+                l++; j++;
+
+            } else {
+                tempArr[l] = arr[k];
+                l++; k++;
+            }
+        }
+
+        // Merging remaining pairs
+        while (i < mid1 && j < mid2) {
+            if (arr[i] <= arr[j]) {
+                tempArr[l] = arr[i];
+                l++; i++;
+            } else {
+                tempArr[l] = arr[j];
+                l++; j++;
+            }
+        }
+
+        while (i < mid1 && k <= finish) {
+            if (arr[i] <= arr[k]) {
+                tempArr[l] = arr[i];
+                l++; i++;
+            } else {
+                tempArr[l] = arr[k];
+                l++; k++;
+            }
+        }
+        
+        while (j < mid2 && k <= finish) {
+            if (arr[j] <= arr[k]) {
+                tempArr[l] = arr[j];
+                l++; j++;
+            } else {
+                tempArr[l] = arr[k];
+                l++; k++;
+            }
+        }
+
+        // Merging the leftovers remaining from the last part
+        while (i < mid1) {
+           tempArr[l] = arr[i]; 
+           l++; i++;
+        }
+        while (j < mid2) {
+            tempArr[l] = arr[j]; 
+            l++; j++;
+        }
+        while (k <= finish) {
+            tempArr[l] = arr[k]; 
+            l++; k++;
+        }
+
+        // Lastly copying the array into the original array
+        for (int m = start; m < tempArr.length; m++) {
+            arr[m] = tempArr[m];
         }
     }
 
