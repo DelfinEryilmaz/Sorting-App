@@ -22,17 +22,27 @@ public class SortingController {
     @FXML
     public void initialize() {
         this.canvasController = new CanvasController(visualizationCanvas);
-        canvasController.drawArray();
     }
+
     @FXML
-    public void handleMergeSortButton(ActionEvent event) {
+    public void handleMergeSort(ActionEvent event) {
         System.out.println("Button was clicked!");
-        int[] arr = generateArr(5, 0, 10);
+        int[] arr = generateArr(20, 0, 10);
         System.out.println(Arrays.toString(arr));
+        canvasController.drawArray(arr, 10);
         QuickSort.quickSort(arr, QuickSort.Type.FIRST);
         System.out.println(Arrays.toString(arr));
     }
 
+    @FXML
+    public void handleQuickSort(ActionEvent event) {
+        System.out.println("Button was clicked!");
+        int[] arr = generateArr(20, 0, 10);
+        System.out.println(Arrays.toString(arr));
+        canvasController.drawArray(arr, 10);
+        QuickSort.quickSort(arr, QuickSort.Type.FIRST);
+        System.out.println(Arrays.toString(arr));
+    }
 
     /**
      * Generates an array filled with random integers in a specific range.
