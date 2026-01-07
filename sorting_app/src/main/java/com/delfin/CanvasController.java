@@ -49,7 +49,7 @@ public class CanvasController {
     }
 
     /**
-     * Redraws the specific bar in the array
+     * Redraws the specific bar in the array.
      * @param index bar's position in the array
      */
     public void redrawBar(int index) {
