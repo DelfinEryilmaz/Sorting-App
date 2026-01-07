@@ -1,5 +1,7 @@
 package com.delfin;
 
+import java.util.Arrays;
+import com.delfin.SortingAlgorithms.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -25,5 +27,25 @@ public class SortingController {
     @FXML
     public void handleMergeSortButton(ActionEvent event) {
         System.out.println("Button was clicked!");
+        int[] arr = generateArr(5, 0, 10);
+        System.out.println(Arrays.toString(arr));
+        QuickSort.quickSort(arr, QuickSort.Type.FIRST);
+        System.out.println(Arrays.toString(arr));
+    }
+
+
+    /**
+     * Generates an array filled with random integers in a specific range.
+     * @param length
+     * @param lowerBound
+     * @param upperBound
+     * @return the filled array
+     */
+    private int[] generateArr(int length, int lowerBound, int upperBound) {
+        int[] arr = new int[length];
+        for (int i = 0; i < length; i++) {
+            arr[i] = lowerBound + (int) (Math.random() * (upperBound - lowerBound + 1));
+        }
+        return arr;
     }
 }
