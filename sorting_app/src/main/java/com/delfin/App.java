@@ -21,6 +21,12 @@ public class App extends Application{
     
         // This is line 14 where it crashes
         Scene scene = new Scene(root); 
+        var cssResource = getClass().getResource("/style.css");
+        if (cssResource != null) {
+            scene.getStylesheets().add(cssResource.toExternalForm());
+        } else {
+            System.out.println("WARN: style.css not found in resources root!");
+        }
         
         primaryStage.setScene(scene);
         primaryStage.setTitle("Sorting App");

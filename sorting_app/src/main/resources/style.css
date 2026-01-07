@@ -1,0 +1,15 @@
+#canvasHolder {
+    -fx-border-color: black;
+    -fx-border-width: 2;
+}
+
+#arrayControls {
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    /* Spacing is a property of the VBox itself, not its children */
+    -fx-spacing: 10;
+}
+
+#arrayControls > VBox {
+    -fx-spacing: 10;
+}

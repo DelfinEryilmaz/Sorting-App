@@ -42,14 +42,5 @@
             </plugin>
 
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>src/resources</directory>
-                <includes>
-                    <include>**/*.fxml</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 </project>
