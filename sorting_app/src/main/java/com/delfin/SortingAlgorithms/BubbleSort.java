@@ -4,13 +4,13 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 1/1/2025
  */
-public class BubbleSort implements VisualizableAlgorithm {
+public class BubbleSort implements SortAlgorithm {
 
     /**
      * General Bubble Sort algorithm which takes an int array.
      * @param arr
      */
-    public static void sort(int[] arr) {
+    public void sort(int[] arr, VisualCallback callback) {
         int length = arr.length;
 
         boolean swapped;
@@ -37,7 +37,7 @@ public class BubbleSort implements VisualizableAlgorithm {
      * General Bubble Sort algorithm which can sort every type of object impelements Comparable interface.
      * @param arr
      */
-    public static void sort(Comparable[] arr) {
+    public void sort(Comparable[] arr, VisualCallback callback) {
         int length = arr.length;
 
         boolean swapped;
@@ -60,23 +60,5 @@ public class BubbleSort implements VisualizableAlgorithm {
                 break;
             }
         }
-    }
-
-    @Override
-    public void onCompare(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
-    }
-
-    @Override
-    public void onSwap(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
-    }
-
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
     }
 }

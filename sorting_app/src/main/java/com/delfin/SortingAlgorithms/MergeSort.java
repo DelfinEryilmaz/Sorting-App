@@ -4,13 +4,13 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 02/01/2025
  */
-public class MergeSort implements VisualizableAlgorithm{
-    /**
-     * Main method for the merge sort.
-     * @param arr
-     * @param isTwoPart
-     */
-    public static void mergeSort(int[] arr, boolean isTwoPart, boolean inPlace) {
+public class MergeSort implements SortAlgorithm{
+    // Default boolean values
+    private boolean inPlace = false;
+    private boolean isTwoPart = true;
+
+    @Override
+    public void sort(int[] arr, VisualCallback callback) {
         if (isTwoPart) {
             if (inPlace) {
                 sortInPlace2(0, arr.length - 1, arr);
@@ -275,20 +275,26 @@ public class MergeSort implements VisualizableAlgorithm{
     }
 
     @Override
-    public void onCompare(int index1, int index2) {
+    public void sort(Comparable[] arr, VisualCallback callback) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
+        throw new UnsupportedOperationException("Unimplemented method 'sort'");
     }
 
-    @Override
-    public void onSwap(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
+    // Getter and Setter Methods
+
+    public boolean isInPlace() {
+        return inPlace;
     }
 
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
+    public void setInPlace(boolean inPlace) {
+        this.inPlace = inPlace;
+    }
+
+    public boolean isTwoPart() {
+        return isTwoPart;
+    }
+
+    public void setTwoPart(boolean isTwoPart) {
+        this.isTwoPart = isTwoPart;
     }
 }

@@ -16,7 +16,7 @@ import javafx.scene.layout.StackPane;
  * Author: Delfin Eryılmaz
  * Date: 
  */
-public class SortingController {
+public class SortingController implements SortAlgorithm.VisualCallback {
     @FXML
     private Canvas canvas; // Hook from FXML
     @FXML
@@ -31,8 +31,15 @@ public class SortingController {
     private ComboBox lowerBoundComboBox; 
     @FXML
     private ComboBox upperBoundComboBox; 
+
     private CanvasController canvasController;
     private int[] currentArr;
+    // Private static sorting methods
+    private static final BubbleSort bubbleSort = new BubbleSort();
+    private static final InsertionSort insertionSort = new InsertionSort();
+    private static final SelectionSort selectionSort = new SelectionSort();
+    private static final MergeSort mergeSort = new MergeSort();
+    private static final QuickSort quickSort = new QuickSort();
 
     @FXML
     public void initialize() {
@@ -47,7 +54,7 @@ public class SortingController {
         // canvas.widthProperty().addListener(evt -> redrawCurrentState());
         // canvas.heightProperty().addListener(evt -> redrawCurrentState());
 
-        // Adding a listener to comboxes to prevent an invalid input
+        // Adding a listener to combo boxes to prevent an invalid input
         // If combobox is editable it stores a secret text field
         lowerBoundComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
@@ -89,7 +96,7 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        BubbleSort.sort(currentArr);
+        bubbleSort.sort(currentArr, this);
     }
 
     @FXML
@@ -98,7 +105,7 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        InsertionSort.sort(currentArr);
+        insertionSort.sort(currentArr, this);
     }
 
     @FXML
@@ -107,7 +114,7 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        SelectionSort.sort(currentArr);
+        selectionSort.sort(currentArr, this);
     }
 
     @FXML
@@ -116,7 +123,9 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        MergeSort.mergeSort(currentArr, true, true);
+        mergeSort.setInPlace(true);
+        mergeSort.setTwoPart(true);
+        mergeSort.sort(currentArr, this);
     }
 
     @FXML
@@ -125,9 +134,9 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        System.out.println(Arrays.toString(currentArr));
-        MergeSort.mergeSort(currentArr, true, false);
-        System.out.println(Arrays.toString(currentArr));
+        mergeSort.setInPlace(false);
+        mergeSort.setTwoPart(true);
+        mergeSort.sort(currentArr, this);
     }
 
     @FXML
@@ -136,9 +145,9 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        System.out.println(Arrays.toString(currentArr));
-        MergeSort.mergeSort(currentArr, false, false);
-        System.out.println(Arrays.toString(currentArr));
+        mergeSort.setInPlace(false);
+        mergeSort.setTwoPart(false);
+        mergeSort.sort(currentArr, this);
     }
 
     @FXML
@@ -147,9 +156,8 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        System.out.println(Arrays.toString(currentArr));
-        QuickSort.quickSort(currentArr, QuickSort.Type.FIRST);
-        System.out.println(Arrays.toString(currentArr));
+        quickSort.setType(QuickSort.Type.FIRST);
+        quickSort.sort(currentArr, this);
     }
 
     @FXML
@@ -158,9 +166,8 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        System.out.println(Arrays.toString(currentArr));
-        QuickSort.quickSort(currentArr, QuickSort.Type.RANDOM);
-        System.out.println(Arrays.toString(currentArr));
+        quickSort.setType(QuickSort.Type.RANDOM);
+        quickSort.sort(currentArr, this);
     }
 
     @FXML
@@ -169,9 +176,8 @@ public class SortingController {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        System.out.println(Arrays.toString(currentArr));
-        QuickSort.quickSort(currentArr, QuickSort.Type.MEDIAN);
-        System.out.println(Arrays.toString(currentArr));
+        quickSort.setType(QuickSort.Type.MEDIAN);
+        quickSort.sort(currentArr, this);
     }
 
     /**
@@ -198,5 +204,29 @@ public class SortingController {
         alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    // Implement VisualCallback interface according to the app for algorithms to use
+    @Override
+    public void onCompare(int index1, int index2) {
+        canvasController.redrawBar(index1);
+        canvasController.redrawBar(index2);
+    }
+
+    @Override
+    public void onSwap(int index1, int index2) {
+        canvasController.redrawBar(index1);
+        canvasController.redrawBar(index2);
+    }
+
+    @Override
+    public void onSuccStep(int index1, int index2) {
+        canvasController.redrawBar(index1);
+        canvasController.redrawBar(index2);
+    }
+
+    @Override
+    public void onComplete() {
+        canvasController.drawArray(currentArr, 0);
     }
 }

@@ -4,13 +4,14 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 1/1/2025
  */
-public class InsertionSort implements VisualizableAlgorithm{
+public class InsertionSort implements SortAlgorithm {
 
     /**
      * Sort the int array with using Insertion sort implementation.
      * @param arr
      */
-    public static void sort(int[] arr) {
+    @Override
+    public void sort(int[] arr, VisualCallback callback) {
         int length = arr.length;
 
         // Outer loop
@@ -33,7 +34,8 @@ public class InsertionSort implements VisualizableAlgorithm{
      * General insertion sort method that can sort any array implementing comparable interface.
      * @param arr
      */
-    public static void sort(Comparable[] arr) {
+    @Override
+    public void sort(Comparable[] arr, VisualCallback callback) {
         int length = arr.length;
 
         for (int i = 1; i < length; i++) {
@@ -49,23 +51,5 @@ public class InsertionSort implements VisualizableAlgorithm{
             // Quitting loop means we have reach the correct index for the value.
             arr[insertPos + 1] = value;
         }
-    }
-
-    @Override
-    public void onCompare(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
-    }
-
-    @Override
-    public void onSwap(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
-    }
-
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
     }
 }

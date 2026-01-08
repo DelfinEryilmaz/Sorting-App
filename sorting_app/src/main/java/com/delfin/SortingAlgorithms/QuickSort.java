@@ -4,7 +4,7 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 
  */
-public class QuickSort implements VisualizableAlgorithm{
+public class QuickSort implements SortAlgorithm {
     /**
      * QuickSort algorithm types based on the pivot element
      */
@@ -14,11 +14,18 @@ public class QuickSort implements VisualizableAlgorithm{
         MEDIAN
     }
 
+    private Type type = Type.FIRST;
+
+    @Override
+    public void sort(int[] arr, VisualCallback callback) {
+        quickSort(arr, callback, type);
+    }
+    
     /**
      * Sorts the array with quicksort using pivot based on the type.
      * @param arr
      */
-    public static void quickSort(int[] arr, Type type) {
+    public void quickSort(int[] arr, VisualCallback callback, Type type) {
         sort(arr, 0, arr.length - 1, type);
     }
 
@@ -29,7 +36,7 @@ public class QuickSort implements VisualizableAlgorithm{
      * @param right
      * @param type
      */
-    private static void sort(int[] arr, int left, int right, Type type) {
+    private void sort(int[] arr, int left, int right, Type type) {
         if (left < right) {
             int splitPoint = partition(arr, left, right, type);
             sort(arr, left, splitPoint, type);
@@ -45,7 +52,7 @@ public class QuickSort implements VisualizableAlgorithm{
      * @param type
      * @return the split point.
      */
-    private static int partition(int[] arr, int left, int right, Type type) {
+    private int partition(int[] arr, int left, int right, Type type) {
         int pivotValue = selectPivot(arr, left, right, type);
 
         int i = left - 1;
@@ -69,7 +76,7 @@ public class QuickSort implements VisualizableAlgorithm{
      * @param type
      * @return
      */
-    private static int selectPivot(int[] arr, int left, int right, Type type) {
+    private int selectPivot(int[] arr, int left, int right, Type type) {
         int pivotValue = 0;
 
         switch (type) {
@@ -119,27 +126,25 @@ public class QuickSort implements VisualizableAlgorithm{
         arr[index2] = temp;
     }
 
-    @Override
-    public void onCompare(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
-    }
-
-    @Override
-    public void onSwap(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
-    }
-
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
-    }
-    
     public static void printArray(int[] arr) {
         for (int i = 0; i < arr.length; i++) {
             System.out.print(arr[i] + " ");
         }
     }
+
+    @Override
+    public void sort(Comparable[] arr, VisualCallback callback) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sort'");
+    }
+
+    // Getters and Setters
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }    
 }
