@@ -6,6 +6,11 @@ package com.delfin.SortingAlgorithms;
  * Date:
  */
 public interface SortAlgorithm {
+    enum OperationType{
+        COMPARE,
+        SWAP,
+        ITERATE
+    }
 
     void sort(Comparable[] arr, VisualCallback callback);
     void sort(int[] arr, VisualCallback callback);
@@ -16,7 +21,7 @@ public interface SortAlgorithm {
     public interface VisualCallback {
         void onCompare(int index1, int index2);
         void onSwap(int index1, int index2);
-        void onSuccStep(int index1, int index2);
+        void onIterate(int index);
         void onComplete();
     }
 }

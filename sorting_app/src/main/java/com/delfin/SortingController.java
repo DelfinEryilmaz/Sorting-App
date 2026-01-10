@@ -2,6 +2,10 @@ package com.delfin;
 
 import java.util.Arrays;
 import com.delfin.SortingAlgorithms.*;
+
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -10,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 /**
  * SortingController is the controller class for the SortingApp.fxml which is the main scene
  * for the application.
@@ -34,6 +39,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     private CanvasController canvasController;
     private int[] currentArr;
+    private Timeline timeline;
+    private static final int DEFAULT_SPEED = 200;
     // Private static sorting methods
     private static final BubbleSort bubbleSort = new BubbleSort();
     private static final InsertionSort insertionSort = new InsertionSort();
@@ -84,7 +91,7 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
             this.currentArr = new int[length];
             generateArr(upperBound, lowerBound);
-            canvasController.drawArray(currentArr, length);
+            canvasController.drawArray(currentArr, length, true);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -206,27 +213,27 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         alert.showAndWait();
     }
 
+
     // Implement VisualCallback interface according to the app for algorithms to use
     @Override
     public void onCompare(int index1, int index2) {
-        canvasController.redrawBar(index1);
-        canvasController.redrawBar(index2);
+        canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.COMPARE);
+        canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.COMPARE);
     }
 
     @Override
     public void onSwap(int index1, int index2) {
-        canvasController.redrawBar(index1);
-        canvasController.redrawBar(index2);
+        canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.SWAP);
+        canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.SWAP);
     }
 
     @Override
-    public void onSuccStep(int index1, int index2) {
-        canvasController.redrawBar(index1);
-        canvasController.redrawBar(index2);
+    public void onIterate(int index) {
+        canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.ITERATE);
     }
 
     @Override
     public void onComplete() {
-        canvasController.drawArray(currentArr, 0);
+        canvasController.drawArray(currentArr, 0, false);
     }
 }

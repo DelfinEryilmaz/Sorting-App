@@ -274,12 +274,6 @@ public class MergeSort implements SortAlgorithm{
         }
     }
 
-    @Override
-    public void sort(Comparable[] arr, VisualCallback callback) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sort'");
-    }
-
     // Getter and Setter Methods
 
     public boolean isInPlace() {
@@ -296,5 +290,11 @@ public class MergeSort implements SortAlgorithm{
 
     public void setTwoPart(boolean isTwoPart) {
         this.isTwoPart = isTwoPart;
+    }
+
+    @Override
+    public void sort(Comparable[] arr, VisualCallback callback) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sort'");
     }
 }

@@ -18,9 +18,11 @@ public class BubbleSort implements SortAlgorithm {
 
             swapped = false;
             for (int j = 0; j < length - i - 1; j++) {
+                callback.onCompare(j, j + 1);
                 if (arr[j] > arr[j + 1]) {
                     int temp = arr[j + 1];
                     arr[j + 1] = arr[j];
+                    callback.onSwap(j, j + 1);
                     arr[j] = temp; 
 
                     swapped = true;
@@ -28,6 +30,7 @@ public class BubbleSort implements SortAlgorithm {
             }
 
             if (!swapped) {
+                callback.onComplete();
                 break;
             }
         }
