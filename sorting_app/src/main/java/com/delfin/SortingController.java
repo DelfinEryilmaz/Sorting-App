@@ -1,14 +1,10 @@
 package com.delfin;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.delfin.SortingAlgorithms.*;
-
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -16,9 +12,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.util.Duration;
 /**
  * SortingController is the controller class for the SortingApp.fxml which is the main scene
  * for the application.
@@ -27,11 +21,13 @@ import javafx.util.Duration;
  */
 public class SortingController implements SortAlgorithm.VisualCallback {
     @FXML
-    private Canvas canvas; // Hook from FXML
+    private Canvas canvas; 
     @FXML
     private StackPane canvasHolder; 
     @FXML
-    private Button mergeSortButton; 
+    private Button pauseButton; 
+    @FXML
+    private Button resetButton; 
     @FXML
     private Button generateButton; 
     @FXML
@@ -46,10 +42,15 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     private CanvasController canvasController;
     private int[] currentArr;
     private int maxValue;
+    private final AtomicBoolean isSorting = new AtomicBoolean(false);
+    private final AtomicBoolean isPaused = new AtomicBoolean(false);
+    private final Object pauseLock = new Object(); // Our private "Monitor" object
     private final static long BASE_SPEED = 100;
-    private long currentSpeed;
+    // volatile -> ensure the sorting thread sees the most recent one
+    private volatile long currentSpeed;
     // Create one single thread for sorting
     private final ExecutorService sortingThread = Executors.newSingleThreadExecutor();
+
     // Private static sorting methods
     private static final BubbleSort bubbleSort = new BubbleSort();
     private static final InsertionSort insertionSort = new InsertionSort();
@@ -57,6 +58,10 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     private static final MergeSort mergeSort = new MergeSort();
     private static final QuickSort quickSort = new QuickSort();
 
+    /**
+     * Initialize the SortingController which includes initializing CanvasController, 
+     * attaching listener to slider, initiazlizing combo boxes etc..
+     */
     @FXML
     public void initialize() {
         this.maxValue = 0;
@@ -72,16 +77,28 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         // canvas.widthProperty().addListener(evt -> redrawCurrentState());
         // canvas.heightProperty().addListener(evt -> redrawCurrentState());
 
-        // Adding a listener to combo boxes to prevent an invalid input
+        // Add a listener to combo boxes to prevent an invalid input
         // If combobox is editable it stores a secret text field
+        sizeComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                // Remove any character that isn't a digit
+                lowerBoundComboBox.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
         lowerBoundComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 // Remove any character that isn't a digit
                 lowerBoundComboBox.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
             }
         });
+        upperBoundComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d*")) {
+                // Remove any character that isn't a digit
+                lowerBoundComboBox.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
 
-        // Initializing combo boxes
+        // Initialize combo boxes
         sizeComboBox.getItems().addAll("10", "20", "50", "100", "200");
         sizeComboBox.getSelectionModel().select("50"); // Set a default
 
@@ -91,12 +108,15 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         upperBoundComboBox.getItems().addAll("100", "500", "1000");
         upperBoundComboBox.getSelectionModel().select("100");
 
-        // Adding a listener to speed slider
+        // Add a listener to speed slider and andjust the the speed
         speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             currentSpeed = (long) (BASE_SPEED / newValue.doubleValue());
         });
     }
 
+    /**
+     * Generates the array according to the selected properties through array panel.
+     */
     @FXML
     public void handleGenerateArr() {
         try {
@@ -113,11 +133,39 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     }
 
     @FXML
+    public void handlePauseButton() {
+        if (!isSorting.get()) return; // Don't pause if nothing is running
+
+        boolean currentlyPaused = isPaused.get();
+        isPaused.set(!currentlyPaused); // Toggle the flag
+
+        // Change the button text based 
+        if (currentlyPaused) {
+            // We were paused, now we are resuming: Wake up the worker!
+            synchronized (pauseLock) {
+                pauseLock.notifyAll();
+            }
+            pauseButton.setText("Pause"); 
+        } else {
+            pauseButton.setText("Resume");
+        }
+    }
+
+    @FXML
+    public void handleResetButton() {
+
+    }
+
+    /**
+     * Handles the BubbleSort running selected through menu.
+     */
+    @FXML
     public void handleBubbleSort() {
         if (currentArr == null) {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
+        // Assigns the BubbleSort 
         sortingThread.submit(() -> {
             bubbleSort.sort(currentArr, this);
         });
@@ -140,7 +188,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        selectionSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            selectionSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -151,7 +201,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         }
         mergeSort.setInPlace(true);
         mergeSort.setTwoPart(true);
-        mergeSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            mergeSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -162,7 +214,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         }
         mergeSort.setInPlace(false);
         mergeSort.setTwoPart(true);
-        mergeSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            mergeSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -173,7 +227,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         }
         mergeSort.setInPlace(false);
         mergeSort.setTwoPart(false);
-        mergeSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            mergeSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -183,7 +239,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             return;
         }
         quickSort.setType(QuickSort.Type.FIRST);
-        quickSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            quickSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -193,7 +251,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             return;
         }
         quickSort.setType(QuickSort.Type.RANDOM);
-        quickSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            quickSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -203,11 +263,13 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             return;
         }
         quickSort.setType(QuickSort.Type.MEDIAN);
-        quickSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            quickSort.sort(currentArr, this);
+        });
     }
 
     /**
-     * Generates an array filled with random integers in a specific range.
+     * Helper method that generates an array filled with random integers in a specific range.
      * @param length
      * @param lowerBound
      * @param upperBound
@@ -237,6 +299,7 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
 
     // Implement VisualCallback interface according to the app for algorithms to use
+
     @Override
     public void onCompare(int index1, int index2) {
         // Tell the UI thread to update the screen
@@ -294,6 +357,25 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
         javafx.application.Platform.runLater(() -> {
             canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.DEFAULT);
+        });
+    }
+
+    @Override
+    public void onMove(int from, int to) {
+        javafx.application.Platform.runLater(() -> {
+            canvasController.drawEmptyBar(from);
+            canvasController.redrawBar(currentArr, to, SortAlgorithm.OperationType.SWAP);
+        });
+
+        // Since this code block is read by sortingThread, it sleeps
+        try {
+            Thread.sleep(currentSpeed); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, to, SortAlgorithm.OperationType.DEFAULT);
         });
     }
 

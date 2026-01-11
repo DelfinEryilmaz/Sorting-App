@@ -33,7 +33,17 @@ public class CanvasController {
     }
 
     /**
-     * Handles the initial array drawing 
+     * Clears all the Canvas.
+     */
+    public void clear() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
+    /**
+     * Handles the whole array drawing.
+     * @param arr array that will be displayed
+     * @param maxHeight maxValue in the array
+     * @param isInitial is array displayed for the first time
      */
     public void drawArray(int[] arr, double maxHeight, boolean isInitial) {
         if (!isInitial) {
@@ -42,7 +52,7 @@ public class CanvasController {
             gc.setFill(Paint.valueOf("BLACK"));
         }
 
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        clear();
         barWidth = ( (canvas.getWidth() - 2 * PADDING) - ((arr.length - 1) * GAP) ) / arr.length;
         this.maxValue = maxHeight;
 
@@ -58,6 +68,20 @@ public class CanvasController {
 
             gc.fillRect(x, y, barWidth, barHeight);
         }
+    }
+    
+    /**
+     * Draws the empty bar for especially shifting operations.
+     * @param index index that will be cleared
+     */
+    public void drawEmptyBar(int index) {
+        double x = index * (barWidth + GAP);
+        // Clear the whole column
+        gc.clearRect(x, 0, barWidth, canvas.getHeight());
+        
+        // Optional: Draw a faint gray outline or "ghost" to show where the hole is
+        gc.setStroke(Paint.valueOf("LIGHTGRAY"));
+        gc.strokeRect(x, MAX_HEIGHT - 5, barWidth, 10); 
     }
 
     /**

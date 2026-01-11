@@ -16,18 +16,24 @@ public class InsertionSort implements SortAlgorithm {
 
         // Outer loop
         for (int i = 1; i < length; i++) {
+            callback.onIterate(i);
             int value = arr[i];
             int insertPos = i - 1;
 
             // Tracking backwards to insert value its correct place
             while (insertPos >= 0 && arr[insertPos] > value) {
+                callback.onCompare(insertPos, i);
+
                 // Shifting the array
                 arr[insertPos + 1] = arr[insertPos];
+                callback.onMove(insertPos, insertPos + 1);
                 insertPos--;
             }
             // Quitting loop means we have reach the correct index for the value.
             arr[insertPos + 1] = value;
+            callback.onSwap(insertPos + 1, insertPos + 1);
         }
+        callback.onComplete();
     }
 
     /**

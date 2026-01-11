@@ -87,9 +87,9 @@
                <Label text="Speed" />
                <Slider fx:id="speedSlider" max="2.0" min="0.1" value="1.0" />
             </VBox>
-               <Button text="Reset" />
+               <Button fx:id="pauseButton" text="Pause" onAction="#handlePauseButton" />
+               <Button fx:id="resetButton" text="Reset" onAction="#handleResetButton" />
          </children>
       </HBox>
    </bottom>
-
 </BorderPane>

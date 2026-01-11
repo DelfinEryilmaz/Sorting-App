@@ -17,12 +17,39 @@ public interface SortAlgorithm {
     void sort(int[] arr, VisualCallback callback);
 
     /**
-     * A Callback interface to visualize the sorting algorithm.
+     * A Callback interface to provide blueprint methods for visualizing the sorting algorithm.
      */
     public interface VisualCallback {
+        /**
+         * Displays the comparison of the values at index1 and index2.
+         * @param index1
+         * @param index2
+         */
         void onCompare(int index1, int index2);
+
+        /**
+         * Displays the swaps of values at index1 and index2.index1 and index2.
+         * @param index1
+         * @param index2
+         */
         void onSwap(int index1, int index2);
+
+        /**
+         * Displays the iterated index.
+         * @param index
+         */
         void onIterate(int index);
+
+        /**
+         * Displays the shifting from the index to another one.
+         * @param from
+         * @param to
+         */
+        void onMove(int from, int to);
+
+        /**
+         * Displays the complete situation.
+         */
         void onComplete();
     }
 }
