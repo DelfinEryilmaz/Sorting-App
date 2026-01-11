@@ -1,6 +1,9 @@
 package com.delfin;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.delfin.SortingAlgorithms.*;
 
 import javafx.animation.Animation;
@@ -12,6 +15,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
@@ -36,11 +40,16 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     private ComboBox lowerBoundComboBox; 
     @FXML
     private ComboBox upperBoundComboBox; 
+    @FXML
+    private Slider speedSlider;
 
     private CanvasController canvasController;
     private int[] currentArr;
-    private Timeline timeline;
-    private static final int DEFAULT_SPEED = 200;
+    private int maxValue;
+    private final static long BASE_SPEED = 100;
+    private long currentSpeed;
+    // Create one single thread for sorting
+    private final ExecutorService sortingThread = Executors.newSingleThreadExecutor();
     // Private static sorting methods
     private static final BubbleSort bubbleSort = new BubbleSort();
     private static final InsertionSort insertionSort = new InsertionSort();
@@ -50,6 +59,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @FXML
     public void initialize() {
+        this.maxValue = 0;
+        this.currentSpeed = BASE_SPEED;
         this.currentArr = null;
         this.canvasController = new CanvasController(canvas);
 
@@ -80,6 +91,10 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         upperBoundComboBox.getItems().addAll("100", "500", "1000");
         upperBoundComboBox.getSelectionModel().select("100");
 
+        // Adding a listener to speed slider
+        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            currentSpeed = (long) (BASE_SPEED / newValue.doubleValue());
+        });
     }
 
     @FXML
@@ -91,7 +106,7 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
             this.currentArr = new int[length];
             generateArr(upperBound, lowerBound);
-            canvasController.drawArray(currentArr, length, true);
+            canvasController.drawArray(currentArr, maxValue, true);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -103,7 +118,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        bubbleSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            bubbleSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -112,7 +129,9 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        insertionSort.sort(currentArr, this);
+        sortingThread.submit(() -> {
+            insertionSort.sort(currentArr, this);
+        });
     }
 
     @FXML
@@ -195,9 +214,12 @@ public class SortingController implements SortAlgorithm.VisualCallback {
      * @return the filled array
      */
     private void generateArr(int lowerBound, int upperBound) {
+        int max = 0;
         for (int i = 0; i < currentArr.length; i++) {
             currentArr[i] = lowerBound + (int) (Math.random() * (upperBound - lowerBound + 1));
+            if (max < currentArr[i]) max = currentArr[i];
         }
+        this.maxValue = max;
     }
 
     /**
@@ -217,23 +239,75 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     // Implement VisualCallback interface according to the app for algorithms to use
     @Override
     public void onCompare(int index1, int index2) {
-        canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.COMPARE);
-        canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.COMPARE);
+        // Tell the UI thread to update the screen
+        // It does not create a new thread only adds a task
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.COMPARE);
+            canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.COMPARE);
+        });
+
+        // Since this code block is read by sortingThread, it sleeps
+        try {
+            Thread.sleep(currentSpeed); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.DEFAULT);
+            canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.DEFAULT);
+        });
     }
 
     @Override
     public void onSwap(int index1, int index2) {
-        canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.SWAP);
-        canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.SWAP);
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.SWAP);
+            canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.SWAP);
+        });
+
+        // Since this code block is read by sortingThread, it sleeps
+        try {
+            Thread.sleep(currentSpeed); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.DEFAULT);
+            canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.DEFAULT);
+        });
     }
 
     @Override
     public void onIterate(int index) {
-        canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.ITERATE);
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.ITERATE);
+        });
+
+        // Since this code block is read by sortingThread, it sleeps
+        try {
+            Thread.sleep(currentSpeed); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        javafx.application.Platform.runLater(() -> {
+            canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.DEFAULT);
+        });
     }
 
     @Override
     public void onComplete() {
-        canvasController.drawArray(currentArr, 0, false);
+        javafx.application.Platform.runLater(() -> {
+            canvasController.drawArray(currentArr, maxValue, false);
+        });
+
+        // Since this code block is read by sortingThread, it sleeps
+        try {
+            Thread.sleep(currentSpeed); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

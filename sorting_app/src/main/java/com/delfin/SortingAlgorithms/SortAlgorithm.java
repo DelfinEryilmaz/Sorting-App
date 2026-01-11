@@ -9,7 +9,8 @@ public interface SortAlgorithm {
     enum OperationType{
         COMPARE,
         SWAP,
-        ITERATE
+        ITERATE,
+        DEFAULT
     }
 
     void sort(Comparable[] arr, VisualCallback callback);

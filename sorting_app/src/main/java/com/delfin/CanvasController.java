@@ -38,11 +38,14 @@ public class CanvasController {
     public void drawArray(int[] arr, double maxHeight, boolean isInitial) {
         if (!isInitial) {
             gc.setFill(Paint.valueOf("GREEN"));
+        } else {
+            gc.setFill(Paint.valueOf("BLACK"));
         }
 
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         barWidth = ( (canvas.getWidth() - 2 * PADDING) - ((arr.length - 1) * GAP) ) / arr.length;
-        
+        this.maxValue = maxHeight;
+
         for (int i = 0; i < arr.length; i++) {
             // Calculate proportional height
             double barHeight = ((double)arr[i] / maxHeight) * MAX_HEIGHT;
@@ -75,6 +78,7 @@ public class CanvasController {
                 gc.setFill(Paint.valueOf("YELLOW"));
                 break;
             default:
+                gc.setFill(Paint.valueOf("BLACK"));
                 break;
         }
 
@@ -83,7 +87,7 @@ public class CanvasController {
         double y = MAX_HEIGHT - barHeight;
 
         // Clear old bar
-        gc.clearRect(x, y, barWidth, barHeight);
+        gc.clearRect(x, 0, barWidth, canvas.getHeight());
 
         // Draw the new bar
         gc.fillRect(x, y, barWidth, barHeight);

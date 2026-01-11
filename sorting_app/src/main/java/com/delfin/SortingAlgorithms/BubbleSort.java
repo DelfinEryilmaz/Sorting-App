@@ -22,8 +22,8 @@ public class BubbleSort implements SortAlgorithm {
                 if (arr[j] > arr[j + 1]) {
                     int temp = arr[j + 1];
                     arr[j + 1] = arr[j];
-                    callback.onSwap(j, j + 1);
                     arr[j] = temp; 
+                    callback.onSwap(j, j + 1);
 
                     swapped = true;
                 }
