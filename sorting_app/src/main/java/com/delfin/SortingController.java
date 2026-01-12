@@ -44,7 +44,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
     private int maxValue;
     private final AtomicBoolean isSorting = new AtomicBoolean(false);
     private final AtomicBoolean isPaused = new AtomicBoolean(false);
-    private final Object pauseLock = new Object(); // Our private "Monitor" object
+    // Our private monitor object
+    private final Object pauseLock = new Object(); 
     private final static long BASE_SPEED = 100;
     // volatile -> ensure the sorting thread sees the most recent one
     private volatile long currentSpeed;
@@ -134,26 +135,41 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @FXML
     public void handlePauseButton() {
-        if (!isSorting.get()) return; // Don't pause if nothing is running
+        // If there is no array being sorted
+        if (!isSorting.get()) return; 
 
+        // Change the status of the isPaused Atomic boolean
         boolean currentlyPaused = isPaused.get();
-        isPaused.set(!currentlyPaused); // Toggle the flag
+        isPaused.set(!currentlyPaused); 
 
         // Change the button text based 
         if (currentlyPaused) {
-            // We were paused, now we are resuming: Wake up the worker!
+            // If sorting is resuming
             synchronized (pauseLock) {
+                // Wake up the sorting thread which was waited in checkStatus()
                 pauseLock.notifyAll();
             }
-            pauseButton.setText("Pause"); 
+
+            pauseButton.setText("Pause");
         } else {
-            pauseButton.setText("Resume");
+            // If sorting paused.
+            pauseButton.setText("Resume"); 
         }
     }
 
     @FXML
     public void handleResetButton() {
+        isSorting.set(false);
+        isPaused.set(false);
 
+        synchronized (pauseLock) {
+            pauseLock.notifyAll();
+        }
+
+        // Update UI elements
+        pauseButton.setText("Pause");
+        canvasController.clear(); 
+        currentArr = null;    
     }
 
     /**
@@ -165,10 +181,23 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        // Assigns the BubbleSort 
-        sortingThread.submit(() -> {
-            bubbleSort.sort(currentArr, this);
-        });
+
+        if (isSorting.compareAndSet(false, true)) {
+            isPaused.set(false);
+
+            sortingThread.submit(() -> {
+                try {
+                    bubbleSort.sort(currentArr, this);
+                } catch (RuntimeException e) {
+                    System.out.println("Sort stopped: " + e.getMessage());
+                } finally {
+                    // Ensure the flag is reset so we can sort again later
+                    isSorting.set(false);
+                }
+            });
+        } else {
+            displayError("Concurrency", "You cannot run two sorting algorithms at once.");
+        }
     }
 
     @FXML
@@ -177,9 +206,23 @@ public class SortingController implements SortAlgorithm.VisualCallback {
             displayError("Array", "You have to initialize array before sorting.");
             return;
         }
-        sortingThread.submit(() -> {
-            insertionSort.sort(currentArr, this);
-        });
+
+        if (isSorting.compareAndSet(false, true)) {
+            isPaused.set(false);
+
+            sortingThread.submit(() -> {
+                try {
+                    insertionSort.sort(currentArr, this);
+                } catch (RuntimeException e) {
+                    System.out.println("Sort stopped: " + e.getMessage());
+                } finally {
+                    // Ensure the flag is reset so we can sort again later
+                    isSorting.set(false);
+                }
+            });
+        } else {
+            displayError("Concurrency", "You cannot run two sorting algorithms at once.");
+        }
     }
 
     @FXML
@@ -297,11 +340,33 @@ public class SortingController implements SortAlgorithm.VisualCallback {
         alert.showAndWait();
     }
 
+    /**
+     * Checks the status of the UI thread and continue the execution according to that.
+     */
+    public void checkStatus() {
+        if (!isSorting.get()) {
+            throw new RuntimeException("Sort stopped by user.");
+        }
+
+        // Synchronized code block -> stops the sorting thread if sorting is not happening
+        // Where pause and resume signals are caught
+        synchronized (pauseLock) {
+            while (isPaused.get()) {
+                try {
+                    // The sorting thread waits here and releases lock
+                    pauseLock.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
 
     // Implement VisualCallback interface according to the app for algorithms to use
 
     @Override
     public void onCompare(int index1, int index2) {
+        checkStatus();
         // Tell the UI thread to update the screen
         // It does not create a new thread only adds a task
         javafx.application.Platform.runLater(() -> {
@@ -324,6 +389,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @Override
     public void onSwap(int index1, int index2) {
+        checkStatus();
+
         javafx.application.Platform.runLater(() -> {
             canvasController.redrawBar(currentArr, index1, SortAlgorithm.OperationType.SWAP);
             canvasController.redrawBar(currentArr, index2, SortAlgorithm.OperationType.SWAP);
@@ -344,6 +411,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @Override
     public void onIterate(int index) {
+        checkStatus();
+
         javafx.application.Platform.runLater(() -> {
             canvasController.redrawBar(currentArr, index, SortAlgorithm.OperationType.ITERATE);
         });
@@ -362,6 +431,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @Override
     public void onMove(int from, int to) {
+        checkStatus();
+
         javafx.application.Platform.runLater(() -> {
             canvasController.drawEmptyBar(from);
             canvasController.redrawBar(currentArr, to, SortAlgorithm.OperationType.SWAP);
@@ -381,6 +452,8 @@ public class SortingController implements SortAlgorithm.VisualCallback {
 
     @Override
     public void onComplete() {
+        checkStatus();
+
         javafx.application.Platform.runLater(() -> {
             canvasController.drawArray(currentArr, maxValue, false);
         });
