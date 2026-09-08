@@ -8,13 +8,14 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 03/01/2025
  */
-public class SelectionSort implements VisualizableAlgorithm{
+public class SelectionSort implements SortAlgorithm {
 
+    @Override
     /**
      * Selection sort algorithm sorting an int array in an ascending order.
      * @param arr
      */
-    public static void sort(int[] arr) {
+    public void sort(int[] arr, VisualCallback callback) {
         int length = arr.length;
 
         for (int i = 0; i < length - 1; i++) {
@@ -36,11 +37,13 @@ public class SelectionSort implements VisualizableAlgorithm{
         }
     }
 
+    
     /**
      * Selection sort algorithm sorting a comparable array in an ascending order.
      * @param arr
      */
-    public static void sort(Comparable[] arr) {
+    @Override
+    public void sort(Comparable[] arr, VisualCallback callback) {
         int length = arr.length;
 
         for (int i = 0; i < length - 1; i++) {
@@ -60,23 +63,5 @@ public class SelectionSort implements VisualizableAlgorithm{
             arr[i] = arr[minIndex];
             arr[minIndex] = temp;
         }
-    }
-
-    @Override
-    public void onCompare(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
-    }
-
-    @Override
-    public void onSwap(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
-    }
-
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
     }
 }

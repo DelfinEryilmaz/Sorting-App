@@ -4,28 +4,29 @@ package com.delfin.SortingAlgorithms;
  * Author: Delfin Eryılmaz
  * Date: 02/01/2025
  */
-public class MergeSort implements VisualizableAlgorithm{
-    /**
-     * Main method for the merge sort.
-     * @param arr
-     * @param isTwoPart
-     */
-    public static void mergeSort(int[] arr, boolean isTwoPart, boolean inPlace) {
+public class MergeSort implements SortAlgorithm{
+    // Default boolean values
+    private boolean inPlace = false;
+    private boolean isTwoPart = true;
+
+    @Override
+    public void sort(int[] arr, VisualCallback callback) {
         if (isTwoPart) {
             if (inPlace) {
-                sortInPlace2(0, arr.length - 1, arr);
+                sortInPlace2(0, arr.length - 1, arr, callback);
             } else {
                 int[] temp = new int[arr.length];
-                sort2(0, arr.length - 1, arr, temp);
+                sort2(0, arr.length - 1, arr, temp, callback);
             }
         } else {
             if (inPlace) {
 
             } else {
                 int[] temp = new int[arr.length];
-                sort3(0, arr.length - 1, arr, temp);
+                sort3(0, arr.length - 1, arr, temp, callback);
             }
         }
+        callback.onComplete();
     }
 
     /**
@@ -35,7 +36,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param arr
      * @param tempArr
      */
-    private static void sort2(int start, int finish, int[] arr, int[] tempArr) {
+    private static void sort2(int start, int finish, int[] arr, int[] tempArr, VisualCallback callback) {
         if (finish - start == 1) {
             if (arr[start] > arr[finish]) {
                 int temp = arr[finish];
@@ -46,9 +47,9 @@ public class MergeSort implements VisualizableAlgorithm{
                 
         } else if (finish != start) {
             int mid = (start + finish) / 2;
-            sort2(start, mid, arr, tempArr);
-            sort2(mid + 1, finish, arr, tempArr);
-            merge2(arr, tempArr, start, mid, finish);
+            sort2(start, mid, arr, tempArr, callback);
+            sort2(mid + 1, finish, arr, tempArr, callback);
+            merge2(arr, tempArr, start, mid, finish, callback);
         }
         // If the remaining part is one element which is start == finish
         return;
@@ -62,7 +63,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param mid
      * @param finish
      */
-    private static void merge2(int[] arr, int[] temp, int start, int mid, int finish) {
+    private static void merge2(int[] arr, int[] temp, int start, int mid, int finish, VisualCallback callback) {
         int i = start;
         int j = mid + 1;
         int k = start;
@@ -100,7 +101,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param finish
      * @param arr
      */
-    private static void sortInPlace2(int start, int finish, int[] arr) {
+    private static void sortInPlace2(int start, int finish, int[] arr, VisualCallback callback) {
         if (start >= finish) return;
         if (finish - start == 1) {
             if (arr[start] > arr[finish]) {
@@ -111,9 +112,9 @@ public class MergeSort implements VisualizableAlgorithm{
             }
         } else if (finish != start) {
             int mid = (start + finish) / 2;
-            sortInPlace2(start, mid, arr);
-            sortInPlace2(mid + 1, finish, arr);
-            mergeInPlace2(arr, start, mid, finish);
+            sortInPlace2(start, mid, arr, callback);
+            sortInPlace2(mid + 1, finish, arr, callback);
+            mergeInPlace2(arr, start, mid, finish, callback);
         }
         // If the remaining part is one element which is start == finish
         return;
@@ -126,7 +127,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param mid
      * @param finish
      */
-    private static void mergeInPlace2(int[] arr, int start, int mid, int finish) {
+    private static void mergeInPlace2(int[] arr, int start, int mid, int finish, VisualCallback callback) {
         int start2 = mid + 1;
 
         // If there is a direct merge
@@ -162,7 +163,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param arr
      * @param tempArr
      */
-    private static void sort3(int start, int finish, int[] arr, int[] tempArr) {
+    private static void sort3(int start, int finish, int[] arr, int[] tempArr, VisualCallback callback) {
         if (start >= finish) return;
 
         if (finish - start == 1) {
@@ -178,11 +179,11 @@ public class MergeSort implements VisualizableAlgorithm{
             int mid1 = start + (length / 3);
             int mid2 = start + 2 * (length / 3);
 
-            sort3(start, mid1 - 1, arr, tempArr);
-            sort3(mid1, mid2 - 1, arr, tempArr);
-            sort3(mid2, finish, arr, tempArr);
+            sort3(start, mid1 - 1, arr, tempArr, callback);
+            sort3(mid1, mid2 - 1, arr, tempArr, callback);
+            sort3(mid2, finish, arr, tempArr, callback);
 
-            merge3(arr, tempArr, start, mid1, mid2, finish);
+            merge3(arr, tempArr, start, mid1, mid2, finish, callback);
         }
     }
 
@@ -195,7 +196,7 @@ public class MergeSort implements VisualizableAlgorithm{
      * @param mid2
      * @param finish
      */
-    private static void merge3(int[] arr, int[] tempArr, int start, int mid1, int mid2, int finish) {
+    private static void merge3(int[] arr, int[] tempArr, int start, int mid1, int mid2, int finish, VisualCallback callback) {
         int i = start;
         int j = mid1;
         int k = mid2;
@@ -274,21 +275,27 @@ public class MergeSort implements VisualizableAlgorithm{
         }
     }
 
-    @Override
-    public void onCompare(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onCompare'");
+    // Getter and Setter Methods
+
+    public boolean isInPlace() {
+        return inPlace;
+    }
+
+    public void setInPlace(boolean inPlace) {
+        this.inPlace = inPlace;
+    }
+
+    public boolean isTwoPart() {
+        return isTwoPart;
+    }
+
+    public void setTwoPart(boolean isTwoPart) {
+        this.isTwoPart = isTwoPart;
     }
 
     @Override
-    public void onSwap(int index1, int index2) {
+    public void sort(Comparable[] arr, VisualCallback callback) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSwap'");
-    }
-
-    @Override
-    public void onSuccStep(int index1, int index2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onSuccStep'");
+        throw new UnsupportedOperationException("Unimplemented method 'sort'");
     }
 }
